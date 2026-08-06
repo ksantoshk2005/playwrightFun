@@ -17,7 +17,7 @@ jobs:
     - name: Azure Login
       uses: azure/login@v2
       with:
-        creds: ${{secrets.}}
+        creds: ${{secrets.AZURE_PLAYWRIGHT}}
     - name: Install dependencies
       run: npm ci
     - name: Install Playwright Browsers
