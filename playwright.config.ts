@@ -32,11 +32,19 @@ export default defineConfig({
     // baseURL: 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
 
+    // Maximum time allowed for browser actions like click(), fill(), check(), etc.
+    // 20 * 1000 = 20 seconds.
     actionTimeout: 20 * 1000,
+    // Maximum time allowed for page navigation and waiting for the page to load.
+    // 30 * 1000 = 30 seconds.
     navigationTimeout: 30 * 1000,
+
+    screenshot: 'on',
+
   },
+
 
   /* Configure projects for major browsers */
   projects: [
