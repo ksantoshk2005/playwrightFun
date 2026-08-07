@@ -1,0 +1,73 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  # Job 1: Run Playwright Tests
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_SERVICE_URL: ${{ secrets.PLAYWRIGHT_SERVICE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_PLAYWRIGHT }}
+      - name: Run Playwright tests
+        run: npx playwright test --config=playwright.service.config.ts --workers=4
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Job 2: Run Custom Script
+  build:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
+      - name: Run build script
+        run: npm run build  # or your custom script
+
+  # Job 3: Deploy
+  deploy:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: [test, build]  # Only runs after test and build complete
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy script
+        run: npm run deploy  # or your deployment script
+
+  # Job 4: Run E2E Tests
+  e2e:
+    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
+      - name: Run E2E tests
+        run: npm run e2e  # your e2e script
